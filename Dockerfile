@@ -17,8 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 5. Copy the rest of your app's code
 COPY . .
 
-# 6. Expose the port Render uses
+# 6. Expose port (informational only)
 EXPOSE 10000
 
-# 7. Start the server using Gunicorn
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:10000"]
+# 7. Start the server using Gunicorn — bind to Render's assigned port
+CMD gunicorn app:app --bind 0.0.0.0:$PORT
