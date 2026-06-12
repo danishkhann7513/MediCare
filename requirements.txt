@@ -6,3 +6,4 @@ twilio
 itsdangerous
 Pillow
 pytesseract
+gunicorn
