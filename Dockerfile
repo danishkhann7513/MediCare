@@ -21,4 +21,4 @@ COPY . .
 EXPOSE 10000
 
 # 7. Start the server using Gunicorn — bind to Render's assigned port
-CMD gunicorn app:app --bind 0.0.0.0:$PORT
+CMD gunicorn app:app --bind 0.0.0.0:${PORT:-10000}
