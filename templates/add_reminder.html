@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<div class="auth-card" style="max-width: 600px;">
+  
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <h2 style="font-family: var(--font-head); color: var(--dark); font-weight: 700;">Add Medicine</h2>
+    <p style="color: var(--text); font-size: 0.95rem;">Set a schedule to never miss a dose</p>
+  </div>
+
+  <form method="post">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div class="form-group">
+        <label>Medicine Name</label>
+        <input type="text" name="medicine_name" placeholder="Ex: Panadol" required>
+      </div>
+
+      <div class="form-group">
+        <label>Dosage</label>
+        <input type="text" name="dosage" placeholder="e.g. 1 tablet">
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div class="form-group">
+        <label>Reminder Time</label>
+        <input type="text" id="time-picker" name="reminder_time" placeholder="Select Time" required style="background-color: white;">
+      </div>
+
+      <div class="form-group">
+        <label>Frequency</label>
+        <select name="frequency" id="frequency" onchange="toggleDateField()">
+          <option value="Daily">Daily</option>
+          <option value="Once">Once</option>
+          <option value="Weekly">Weekly</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group" id="date-group" style="display: none; margin-top: 10px;">
+      <label>Reminder Date</label>
+      <input type="date" name="reminder_date">
+      <small style="color: var(--text); font-size: 0.85rem;">Required for one-time reminders.</small>
+    </div>
+
+    <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
+      <input type="checkbox" name="send_email" id="send_email" checked style="width: auto; margin: 0; cursor: pointer;">
+      <label for="send_email" style="margin: 0; cursor: pointer; font-weight: 500;">Send me an email reminder</label>
+    </div>
+
+    <div style="margin-top: 2rem; display: flex; gap: 15px;">
+      <button type="submit" class="btn btn-primary" style="flex: 1;">Save Reminder</button>
+      <a href="{{ url_for('dashboard') }}" class="btn btn-outline" style="flex: 1; text-align: center;">Cancel</a>
+    </div>
+
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    // 1. Initialize Flatpickr (Time Picker)
+    flatpickr("#time-picker", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",    // 24h format for database
+        altInput: true,       // User friendly view
+        altFormat: "h:i K",   // Displays "02:30 PM"
+        time_24hr: false
+    });
+
+    // 2. Logic to Show/Hide Date field based on Frequency
+    function toggleDateField() {
+        const frequency = document.getElementById('frequency').value;
+        const dateGroup = document.getElementById('date-group');
+        
+        if (frequency.toLowerCase() === 'once') {
+            dateGroup.style.display = 'block';
+            // Optional: require the date if 'Once' is selected
+            dateGroup.querySelector('input').setAttribute('required', 'required');
+        } else {
+            dateGroup.style.display = 'none';
+            dateGroup.querySelector('input').removeAttribute('required');
+        }
+    }
+</script>
+{% endblock %}

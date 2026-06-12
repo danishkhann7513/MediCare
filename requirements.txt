@@ -1,0 +1,8 @@
+Flask==2.2.5
+Flask-Login==0.6.3
+python-dotenv==1.0.1
+APScheduler==3.10.1
+twilio
+itsdangerous
+Pillow
+pytesseract

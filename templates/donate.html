@@ -1,0 +1,281 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  .ngo-item {
+    cursor: pointer;
+    transition: background 0.2s;
+    border-left: 4px solid transparent;
+  }
+  .ngo-item:hover {
+    background-color: #f8f9fa;
+    border-left: 4px solid #0d6efd;
+  }
+  .ngo-name { font-weight: 700; color: #1e293b; }
+  .ngo-addr { font-size: 0.85rem; color: #64748b; }
+  .btn-select-ngo {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      margin-top: 5px;
+      display: inline-block;
+  }
+</style>
+
+<div class="auth-card" style="max-width: 900px; margin: 0 auto;">
+  
+  <div style="text-align: center; margin-bottom: 1.5rem;">
+    <h2 style="font-family: var(--font-head); color: var(--dark); font-weight: 700;">Donate Medicine</h2>
+    
+    <ul class="nav nav-pills justify-content-center mb-3" id="pills-tab" role="tablist" style="gap: 10px; margin-top: 20px;">
+      <li class="nav-item">
+        <button class="btn btn-outline-primary active" id="pills-form-tab" data-bs-toggle="pill" data-bs-target="#pills-form" type="button">📝 Donation Form</button>
+      </li>
+      <li class="nav-item">
+        <button class="btn btn-outline-primary" id="pills-map-tab" data-bs-toggle="pill" data-bs-target="#pills-map" type="button" onclick="setTimeout(initMap, 300)">🗺️ Find Drop-off Points</button>
+      </li>
+    </ul>
+  </div>
+
+  <div class="tab-content" id="pills-tabContent">
+    
+    <div class="tab-pane fade show active" id="pills-form">
+      <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px dashed #ced4da; margin-bottom: 20px;">
+        <label style="font-weight: bold; margin-bottom: 8px; display: block;">📷 Scan Medicine Strip</label>
+        <div style="display: flex; gap: 10px;">
+          <input type="file" class="form-control" id="scanInput" accept="image/*">
+          <button type="button" class="btn btn-primary" onclick="scanImage()">Scan</button>
+        </div>
+        <small id="scanStatus" style="color: #6c757d; display: block; margin-top: 5px;">Upload a clear image of the medicine name.</small>
+      </div>
+
+      <form method="post" enctype="multipart/form-data">
+        <div class="form-group mb-3">
+            <label style="font-weight: bold; color: #0d6efd;">Select NGO for Donation</label>
+            <select name="selected_ngo" id="ngoDropdown" class="form-control" required>
+                <option value="" disabled selected>-- Choose an NGO --</option>
+                {% for ngo in ngos %}
+                    <option value="{{ ngo.name }}">{{ ngo.name }} ({{ ngo.address }})</option>
+                {% endfor %}
+            </select>
+            <small class="text-muted">Can't decide? check the <a href="#" onclick="document.getElementById('pills-map-tab').click()">Map Tab</a>.</small>
+        </div>
+
+        <div class="form-group">
+          <label>Medicine Name</label>
+          <input type="text" name="medicine_name" id="medName" placeholder="Ex: Amoxicillin" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="form-group">
+            <label>Quantity</label>
+            <input type="text" name="quantity" placeholder="e.g. 2 strips" required>
+          </div>
+          <div class="form-group">
+            <label>Expiry Date</label>
+            <input type="date" name="expiry_date" id="expiry_date" required>
+          </div>
+        </div>
+        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9;">
+          <h4 style="margin-bottom: 1rem; color: var(--dark); font-size: 1.1rem;">📍 Your Pickup Details</h4>
+          <div class="form-group">
+            <label>Pickup Address</label>
+            <textarea name="location" class="form-control" rows="2" placeholder="Your address..." required></textarea>
+          </div>
+          <div class="form-group" style="margin-top: 15px;">
+            <label>Contact Number</label>
+            <input type="tel" name="contact" value="{{ current_user.phone_number }}" required>
+          </div>
+        </div>
+        <div style="margin-top: 2rem; display: flex; gap: 15px;">
+          <button type="submit" class="btn btn-primary" style="flex: 1;">Schedule Pickup</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="tab-pane fade" id="pills-map">
+        <p style="text-align: center; color: #666; margin-bottom: 15px;">Select an NGO from the list to see it on the map.</p>
+        <div class="row g-0" style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+            <div class="col-md-4" style="background: white; height: 450px; overflow-y: auto; border-right: 1px solid #ddd;">
+                <div class="list-group list-group-flush" id="ngo-list-container">
+                    <div class="p-4 text-center text-muted">Loading NGOs...</div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div id="map" style="height: 450px; width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // --- OCR Logic ---
+  async function scanImage() {
+      let input = document.getElementById('scanInput');
+      let status = document.getElementById('scanStatus');
+      let medNameInput = document.getElementById('medName');
+      let expiryInput = document.getElementById('expiry_date');
+
+      if (input.files.length === 0) { alert("Please select an image first."); return; }
+      
+      let formData = new FormData(); 
+      formData.append("file", input.files[0]);
+      status.innerText = "⏳ Analyzing image... (This may take a moment)";
+      
+      try {
+          let response = await fetch('/api/scan_medicine', { method: "POST", body: formData });
+          let result = await response.json();
+          
+          if (result.success) {
+              if (result.medicine) {
+                  medNameInput.value = result.medicine;
+                  status.innerHTML = `✅ Found: <b>${result.medicine}</b>`;
+                  status.style.color = "green";
+              } else {
+                  medNameInput.value = result.raw_text.split('\n')[0].substring(0, 30);
+                  status.innerHTML = "⚠️ Name uncertain, using raw text.";
+                  status.style.color = "orange";
+              }
+
+              if (result.expiry) {
+                  let formattedDate = "";
+                  let dateStr = result.expiry;
+                  try {
+                      if (dateStr.match(/^\d{1,2}[\/\-]\d{2,4}$/)) {
+                          let parts = dateStr.split(/[\/\-]/);
+                          let month = parts[0].padStart(2, '0');
+                          let year = parts[1];
+                          if(year.length === 2) year = "20" + year;
+                          formattedDate = `${year}-${month}-01`;
+                      } else {
+                          let d = new Date(dateStr);
+                          if (!isNaN(d.getTime())) { formattedDate = d.toISOString().split('T')[0]; }
+                      }
+                      if (formattedDate) {
+                          expiryInput.value = formattedDate;
+                          status.innerHTML += ` | Expiry: ${result.expiry}`;
+                      }
+                  } catch (e) { console.log("Date parse error", e); }
+              }
+          } else { 
+              status.innerText = "⚠️ " + result.message; status.style.color = "red";
+          }
+      } catch (error) { 
+          status.innerText = "❌ Connection error."; status.style.color = "red";
+      }
+  }
+
+  // --- MAP & DATA LOGIC ---
+  var map, markers = {};
+  var mapInitialized = false;
+
+  document.addEventListener('DOMContentLoaded', function() {
+      fetchNgos();
+  });
+
+  function fetchNgos() {
+      const listContainer = document.getElementById('ngo-list-container');
+      fetch('/api/ngos')
+          .then(response => response.json())
+          .then(data => {
+              window.fetchedNgos = data; 
+              listContainer.innerHTML = ''; 
+              
+              if (data.length === 0) { 
+                  listContainer.innerHTML = '<div class="p-3 text-muted">No NGOs found.</div>'; return; 
+              }
+
+              data.forEach((ngo) => {
+                  const listItem = document.createElement('div');
+                  listItem.className = 'list-group-item ngo-item p-3';
+                  listItem.innerHTML = `
+                      <div class="ngo-name">${ngo.name}</div>
+                      <div class="ngo-addr">${ngo.address}</div>
+                      <span class="ngo-phone">📞 ${ngo.contact}</span>
+                      <button class="btn btn-sm btn-outline-success btn-select-ngo" onclick="selectNgoAndSwitch('${ngo.name}')">Select for Donation</button>
+                  `;
+                  
+                  listItem.onclick = function(e) {
+                      if(e.target.tagName !== 'BUTTON') { 
+                          document.querySelectorAll('.ngo-item').forEach(i => i.style.backgroundColor = 'white');
+                          listItem.style.backgroundColor = '#f0f9ff';
+                          if (mapInitialized && map) {
+                              map.flyTo([ngo.lat, ngo.lng], 13);
+                              if (markers[ngo.name]) markers[ngo.name].openPopup();
+                          }
+                      }
+                  };
+                  listContainer.appendChild(listItem);
+              });
+              
+              if (mapInitialized) addMarkersToMap();
+          })
+          .catch(err => {
+              listContainer.innerHTML = '<div class="p-3 text-danger">Failed to load NGOs.</div>';
+          });
+  }
+
+  function initMap() {
+      if (mapInitialized) {
+          map.invalidateSize(); 
+          return;
+      }
+      try {
+          // Default center on India
+          map = L.map('map').setView([20.5937, 78.9629], 5);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+          
+          addMarkersToMap();
+
+          // 👇 IMPROVED GEOLOCATION LOGIC 👇
+          if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                  position => {
+                      const userLat = position.coords.latitude;
+                      const userLng = position.coords.longitude;
+                      
+                      // Add a marker for the user
+                      L.marker([userLat, userLng]).addTo(map).bindPopup("<b>📍 You are here</b>").openPopup();
+                      
+                      // Actually MOVE the map to the user's location (Zoom level 10)
+                      map.flyTo([userLat, userLng], 10);
+                  }, 
+                  error => {
+                      console.warn("Geolocation failed or denied by user:", error.message);
+                      // Fails silently: Leaves the map centered on India if they click "Block"
+                  },
+                  { enableHighAccuracy: true, timeout: 5000 }
+              );
+          }
+          
+          mapInitialized = true;
+          setTimeout(() => { map.invalidateSize(); }, 200);
+      } catch (e) { console.error("Map Init Error:", e); }
+  }
+
+  function addMarkersToMap() {
+      if (!window.fetchedNgos || !map) return;
+      window.fetchedNgos.forEach((ngo) => {
+          if (!markers[ngo.name]) {
+              markers[ngo.name] = L.marker([ngo.lat, ngo.lng]).addTo(map)
+                  .bindPopup(`<b>${ngo.name}</b><br>${ngo.address}<br>📞 ${ngo.contact}`);
+          }
+      });
+  }
+
+  function selectNgoAndSwitch(ngoName) {
+      const dropdown = document.getElementById('ngoDropdown');
+      dropdown.value = ngoName; 
+      
+      const formTabTrigger = document.querySelector('#pills-form-tab');
+      const tab = new bootstrap.Tab(formTabTrigger);
+      tab.show();
+      
+      dropdown.style.border = "2px solid #0d6efd";
+      setTimeout(() => dropdown.style.border = "", 2000);
+  }
+</script>
+{% endblock %}

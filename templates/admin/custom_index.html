@@ -1,0 +1,82 @@
+{% extends 'admin/master.html' %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* The main welcome banner gradient */
+        .dashboard-header {
+            background: linear-gradient(135deg, #6e8efb 0%, #a777e3 100%);
+            color: white;
+            border-radius: 20px;
+        }
+        
+        /* Smooth hover animations for the cards */
+        .card-custom {
+            border-radius: 20px;
+            border: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            color: #2b2b2b;
+        }
+        .card-custom:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2) !important;
+        }
+
+        /* 4 Unique Vibrant Gradients for the stat cards */
+        .bg-grad-users { background: linear-gradient(120deg, #f6d365 0%, #fda085 100%); }
+        .bg-grad-donations { background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%); }
+        .bg-grad-reminders { background: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%); }
+        .bg-grad-ngos { background: linear-gradient(120deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); }
+        
+        /* Icon and text sizing */
+        .icon-large { font-size: 3.5rem; opacity: 0.8; }
+        .stat-value { font-size: 4rem; font-weight: 800; line-height: 1; margin-top: 10px; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    
+    <div class="jumbotron dashboard-header shadow-lg p-5 mb-5 text-center">
+        <h1 class="display-4 fw-bold"><i class="fas fa-heartbeat text-danger"></i> MediCare Admin</h1>
+        <p class="lead mt-3 fw-light">Your real-time, colorful overview of platform activity.</p>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card card-custom bg-grad-users shadow p-4 text-center">
+                <i class="fas fa-users icon-large mb-2"></i>
+                <h6 class="text-uppercase fw-bold letter-spacing-1 mt-2">Registered Users</h6>
+                <div class="stat-value">{{ total_users }}</div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card card-custom bg-grad-donations shadow p-4 text-center">
+                <i class="fas fa-box-open icon-large mb-2"></i>
+                <h6 class="text-uppercase fw-bold letter-spacing-1 mt-2">Total Donations</h6>
+                <div class="stat-value">{{ total_donations }}</div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card card-custom bg-grad-reminders shadow p-4 text-center">
+                <i class="fas fa-clock icon-large mb-2"></i>
+                <h6 class="text-uppercase fw-bold letter-spacing-1 mt-2">Active Reminders</h6>
+                <div class="stat-value">{{ total_reminders }}</div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card card-custom bg-grad-ngos shadow p-4 text-center">
+                <i class="fas fa-hand-holding-heart icon-large mb-2"></i>
+                <h6 class="text-uppercase fw-bold letter-spacing-1 mt-2">Partner NGOs</h6>
+                <div class="stat-value">{{ total_ngos }}</div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}

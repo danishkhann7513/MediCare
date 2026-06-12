@@ -1,0 +1,24 @@
+# Virtual Environments
+.venv/
+venv/
+env/
+
+# Secrets and Configuration
+.env
+pyvenv.cfg
+
+# Database 
+*.db
+medicare.db
+medicare.db-journal
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# User Uploads
+static/uploads/
+
+# Firebase Secrets
+firebase-messaging-sw.js
+service-worker.js

@@ -1,0 +1,236 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<style>
+  /* --- Dashboard Layout --- */
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  /* --- Table Styling (Shared for both sections) --- */
+  .table-wrapper {
+    overflow-x: auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    border: 1px solid #f1f5f9;
+  }
+  .custom-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .custom-table th {
+    background-color: #f8fafc;
+    color: #64748b; /* var(--text) */
+    font-weight: 700;
+    text-align: left;
+    padding: 1.2rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .custom-table td {
+    padding: 1.2rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b; /* var(--dark) */
+    font-size: 0.95rem;
+    vertical-align: middle;
+  }
+  .custom-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* --- Badges --- */
+  .badge-custom {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background-color: #f1f5f9;
+    color: #1e293b;
+    display: inline-block;
+  }
+  .badge-status {
+    background-color: #ecfdf5; 
+    color: #047857;
+  }
+  .badge-pending {
+    background-color: #fff7ed;
+    color: #c2410c;
+  }
+
+  /* --- Actions --- */
+  .action-link {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-right: 15px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: 0.2s;
+  }
+  .action-link.edit { color: #0d6efd; }
+  .action-link.delete { color: #ef4444; background: none; border: none; padding: 0; cursor: pointer; }
+</style>
+
+<div class="container">
+  
+  <div class="dashboard-header">
+    <div>
+      <h2 style="font-family: sans-serif; color: #1e293b; font-weight: 700; margin-bottom: 5px;">Dashboard</h2>
+      <span style="color: #64748b;">Welcome back, {{ current_user.name }}</span>
+    </div>
+  </div>
+
+  <section style="margin-bottom: 3rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.25rem; color: #1e293b; font-weight: 700;">💊 Your Reminders</h3>
+      <a href="{{ url_for('add_reminder') }}" class="btn btn-primary" style="padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600;">
+        + Add Reminder
+      </a>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Medicine</th>
+            <th>Dosage</th>
+            <th>Time</th>
+            <th>Frequency</th>
+            <th>Alerts</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in reminders %}
+          <tr>
+            <td style="font-weight: 600; color: #0d6efd;">{{ r['medicine_name'] }}</td>
+            <td>{{ r['dosage'] or '-' }}</td>
+            <td>{{ r['reminder_time'] or '-' }}</td>
+            <td><span class="badge-custom">{{ r['frequency'] }}</span></td>
+            <td>
+                {% if r['send_email'] %}📩{% endif %}
+                {% if r['phone_number'] %}📱{% endif %}
+            </td>
+            <td style="text-align: right;">
+              <a href="{{ url_for('edit_reminder', id=r['id']) }}" class="action-link edit">Edit</a>
+              <form action="{{ url_for('delete_reminder', id=r['id']) }}" method="post" style="display:inline;">
+                <button type="submit" class="action-link delete" onclick="return confirm('Delete this reminder?');">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 3rem; color: #64748b;">
+              <p style="margin-bottom: 10px;">You haven't set any reminders yet.</p>
+              <a href="{{ url_for('add_reminder') }}" style="color: #0d6efd; font-weight: 700; text-decoration: none;">Create your first reminder &rarr;</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.25rem; color: #1e293b; font-weight: 700;">❤️ Donation Tracking</h3>
+      <a href="{{ url_for('donate') }}" class="btn btn-primary" style="padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600;">
+        Donate Medicine
+      </a>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Medicine</th>
+            <th>Quantity</th>
+            <th>Selected NGO</th>
+            <th>Submitted Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in donations %}
+          <tr>
+            <td style="font-weight: 600; color: #0d6efd;">
+                {{ d['medicine_name'] }}
+            </td>
+            
+            <td>{{ d['quantity'] }}</td>
+            
+            <td>
+                {% if d['selected_ngo'] %}
+                    {{ d['selected_ngo'] }}
+                {% else %}
+                    <span style="color: #94a3b8;">General Pool</span>
+                {% endif %}
+            </td>
+
+            <td>{{ d['created_at'].strftime('%b %d, %Y') }}</td>
+            
+            <td>
+                <span class="badge-custom {{ 'badge-status' if d['status'] != 'Pending Pickup' else 'badge-pending' }}">
+                    {{ d['status'] }}
+                </span>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 3rem; color: #64748b;">
+                <p style="margin-bottom: 10px;">You haven't made any donations yet.</p>
+                <a href="{{ url_for('donate') }}" style="color: #0d6efd; font-weight: 700;">Help someone today &rarr;</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<script>
+    // 1. Request Notification Permission on Page Load
+    if (Notification.permission !== "granted") {
+        Notification.requestPermission();
+    }
+
+    // 2. Logic to Check Server for Due Meds
+    async function checkDueMeds() {
+        try {
+            // Poll the local API endpoint
+            const response = await fetch('/api/due');
+            const meds = await response.json();
+
+            if (meds.length > 0) {
+                meds.forEach(med => {
+                    // A. Trigger Desktop Popup
+                    if (Notification.permission === "granted") {
+                        new Notification("💊 MediCare Alert", {
+                            body: `It's time to take ${med.medicine_name} (${med.dosage})`,
+                            icon: "/static/images/logo.png" // Optional: ensures branding
+                        });
+                    }
+
+                    // B. Trigger Voice Alert
+                    let speech = new SpeechSynthesisUtterance(`Reminder. It is time to take ${med.medicine_name}`);
+                    window.speechSynthesis.speak(speech);
+                });
+            }
+        } catch (error) {
+            console.error("Error checking reminders:", error);
+        }
+    }
+
+    // 3. Run this check every 30 seconds
+    setInterval(checkDueMeds, 30000);
+</script>
+
+{% endblock %}

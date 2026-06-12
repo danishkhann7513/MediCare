@@ -1,0 +1,95 @@
+{% extends 'admin/base.html' %}
+
+{% block head_tail %}
+    {{ super() }}
+    <style>
+        /* 1. BULLETPROOF FULL-WIDTH NAVBAR */
+        body {
+            overflow-x: hidden; /* Prevents horizontal scrolling */
+        }
+        
+        nav.navbar {
+            background: linear-gradient(135deg, #6e8efb 0%, #a777e3 100%) !important;
+            border: none !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+            border-radius: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 30px !important;
+            
+            /* The CSS hack to force edge-to-edge bleeding */
+            width: 100vw !important;
+            position: relative;
+            left: 50%;
+            right: 50%;
+            margin-left: -50vw !important;
+            margin-right: -50vw !important;
+            padding-left: 5vw !important;
+            padding-right: 5vw !important;
+        }
+
+        .navbar-brand, .navbar-nav .nav-link {
+            color: white !important;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .navbar-nav .nav-link:hover {
+            color: #f6d365 !important;
+        }
+
+        /* 2. STYLE ALL DATA TABLES (Users, Reminders, Donations, NGOs) */
+        .table-responsive {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            margin-top: 20px;
+        }
+        .table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        /* Colorful Table Headers */
+        .table thead th {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%) !important;
+            color: #2b2b2b !important;
+            border: none !important;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 15px;
+        }
+        /* Round the top corners of the table header */
+        .table thead th:first-child { border-top-left-radius: 10px; }
+        .table thead th:last-child { border-top-right-radius: 10px; }
+        
+        /* Smooth row hover effects */
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
+        .table tbody tr:hover {
+            background-color: #f4f6fd !important;
+            transform: scale(1.005);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .table td {
+            vertical-align: middle;
+            border-top: 1px solid #f0f0f0;
+            color: #444;
+        }
+
+        /* 3. Colorful Action Buttons */
+        .btn-primary, .btn-default {
+            background: linear-gradient(135deg, #6e8efb 0%, #a777e3 100%) !important;
+            border: none !important;
+            color: white !important;
+            border-radius: 8px;
+            transition: opacity 0.2s;
+        }
+        .btn-primary:hover, .btn-default:hover {
+            opacity: 0.8;
+            color: white !important;
+        }
+    </style>
+{% endblock %}

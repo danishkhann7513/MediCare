@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="auth-card">
+  
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <h2 style="font-family: var(--font-head); color: var(--dark); font-weight: 700;">Create Account</h2>
+    <p style="color: var(--text); font-size: 0.95rem;">Join MediCare to start tracking your health</p>
+  </div>
+
+  <form method="post">
+    
+    <div class="form-group">
+      <label for="name">Full Name</label>
+      <input type="text" name="name" id="name" placeholder="Ex: John Doe" required>
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input type="email" name="email" id="email" placeholder="name@example.com" required>
+    </div>
+
+    <div class="form-group">
+      <label for="phone">WhatsApp Number</label>
+      <input type="tel" name="phone" id="phone" placeholder="+919999999999" required>
+      <small style="display: block; margin-top: 5px; color: #666; font-size: 0.85rem;">
+        *Important: Include country code (e.g. +91) for alerts.
+      </small>
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" name="password" id="password" placeholder="Create a strong password" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+      Register Now
+    </button>
+
+  </form>
+  
+  <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9;">
+    <p style="font-size: 0.9rem; color: var(--text);">
+      Already have an account? 
+      <a href="{{ url_for('login') }}" style="color: var(--primary); font-weight: 600;">Login here</a>
+    </p>
+  </div>
+
+</div>
+
+{% endblock %}

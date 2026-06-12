@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<section class="hero">
+  
+  <div class="hero-text">
+    <h1>Health is wealth, <br><span style="color: var(--primary);">Protect it.</span></h1>
+    <p>
+      Never miss a dose again. MediCare helps you track your medication schedule 
+      and allows you to donate unused medicines safely to those in need.
+    </p>
+
+    <div class="hero-buttons">
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('add_reminder') }}" class="btn btn-primary">Add Reminder</a>
+        <a href="{{ url_for('donate') }}" class="btn btn-outline" style="margin-left: 10px;">Donate Meds</a>
+      {% else %}
+        <a href="{{ url_for('register') }}" class="btn btn-primary">Get Started</a>
+        <a href="{{ url_for('login') }}" class="btn btn-outline" style="margin-left: 10px;">Login</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="hero-image">
+    <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
+         alt="Medicine Reminder Illustration">
+  </div>
+
+</section>
+
+<section style="margin-top: 5rem; margin-bottom: 5rem;">
+  <div style="text-align: center; margin-bottom: 3rem;">
+    <h3 style="font-family: var(--font-head); font-size: 2rem; color: var(--dark); margin-bottom: 10px;">Why MediCare?</h3>
+    <p style="color: var(--text);">Simple tools to manage your health responsibly.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+    
+    <div class="card" style="text-align: center; padding: 2.5rem;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">⏰</div>
+      <h4 style="color: var(--dark); font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600;">Smart Reminders</h4>
+      <p style="color: var(--text); font-size: 0.95rem;">Receive timely notifications so you never skip a dose. We keep track so you don't have to.</p>
+    </div>
+
+    <div class="card" style="text-align: center; padding: 2.5rem;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">❤️</div>
+      <h4 style="color: var(--dark); font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600;">Donate Medicines</h4>
+      <p style="color: var(--text); font-size: 0.95rem;">Have unused strips? Don't throw them away. Donate them to local NGOs directly.</p>
+    </div>
+
+    <div class="card" style="text-align: center; padding: 2.5rem;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+      <h4 style="color: var(--dark); font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600;">Privacy First</h4>
+      <p style="color: var(--text); font-size: 0.95rem;">Your health data is sensitive. We ensure your information is encrypted and secure.</p>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
